@@ -1,7 +1,7 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-
 /// Buffer Writer
 class BufferWriter {
   ByteData buffer;
@@ -26,6 +26,34 @@ class BufferWriter {
   /// Set offset to zero
   reset() {
     offset = 0;
+  }
+
+  ///Writes byteLength bytes of value to buf at the current
+  /// offset as [Endian]. Supports up to 48 bits of accuracy.
+  void setUInt(int value, [int byteLength = 0, Endian endian = Endian.little]) {
+    num maxBytes = math.pow(2, 8 * byteLength) - 1;
+
+    if (value > maxBytes || value < 0) {
+      throw RangeError('"value" argument is out of bounds');
+    }
+    if (offset + byteLength > buffer.lengthInBytes) {
+      throw RangeError('"byteLength" out of range');
+    }
+    int mul = 1;
+    if(endian == Endian.little) {
+      int i = 0;
+      buffer.buffer.asUint8List()[offset] = value & 0xFF;
+      while (++i < byteLength && (mul *= 0x100) != 0) {
+        buffer.buffer.asUint8List()[offset + i] = value ~/ mul & 0xFF;
+      }
+    } else {
+      int i = byteLength - 1;
+      buffer.buffer.asUint8List()[offset + i] = value & 0xFF;
+      while (--i >= 0 && (mul *= 0x100) != 0) {
+        buffer.buffer.asUint8List()[offset + i] = value ~/ mul & 0xFF;
+      }
+    }
+    offset = offset + byteLength;
   }
 
   /// Sets the byte at the current offset in buffer to the

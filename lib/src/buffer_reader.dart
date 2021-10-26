@@ -28,6 +28,32 @@ class BufferReader {
     offset = 0;
   }
 
+  ///Reads byteLength number of bytes from buf at the current offset
+  /// and interprets the result as an unsigned, [Endian] integer
+  /// supporting up to 48 bits of accuracy.
+  int getUInt([int byteLength = 0, Endian endian = Endian.little]) {
+    if (offset + byteLength > length) {
+      throw IndexError(byteLength, buffer, 'IndexError',
+          'Cannot get UIntLE out of bounds', buffer.lengthInBytes);
+    }
+    if (endian != Endian.little) {
+      var val = buffer.buffer.asUint8List()[offset];
+      var mul = 1;
+      var i = 0;
+      while (++i < byteLength && (mul *= 0x100) != 0) {
+        val += buffer.buffer.asUint8List()[offset + i] * mul;
+      }
+      return val;
+    } else {
+      var val = buffer.buffer.asUint8List()[offset + --byteLength];
+      var mul = 1;
+      while (byteLength > 0 && (mul *= 0x100) != 0) {
+        val += buffer.buffer.asUint8List()[offset + --byteLength] * mul;
+      }
+      return val;
+    }
+  }
+
   /// Returns the (possibly negative) integer represented by the byte at
   /// current offset in buffer, in two's complement binary
   /// representation.
