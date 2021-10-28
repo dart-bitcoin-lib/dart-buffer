@@ -256,14 +256,14 @@ void main() {
   });
   group('BufferReader.getVarInt()', () {
     test('8bit should be work', () {
-      final list = Uint8List.fromList([252]);
+      final list = Uint8List.fromList([0xfc]);
       final bufferReader = BufferReader.fromTypedData(list);
       final actual = bufferReader.getVarInt();
       expect(actual, equals(list[0]));
     });
     test('16bit should be work', () {
       final list =
-          Uint8List.fromList([253] + List.generate(2, (index) => index));
+          Uint8List.fromList([0xfd] + List.generate(2, (index) => index));
       final bufferReader = BufferReader.fromTypedData(list);
       final actual = bufferReader.getVarInt();
       final value = int.parse(hex.encode(list.reversed.toList().sublist(0, 2)),
@@ -272,7 +272,7 @@ void main() {
     });
     test('32bit should be work', () {
       final list =
-          Uint8List.fromList([254] + List.generate(4, (index) => index));
+          Uint8List.fromList([0xfe] + List.generate(4, (index) => index));
       final bufferReader = BufferReader.fromTypedData(list);
       final actual = bufferReader.getVarInt();
       final value = int.parse(hex.encode(list.reversed.toList().sublist(0, 4)),
@@ -281,7 +281,7 @@ void main() {
     });
     test('64bit should be work', () {
       final list =
-          Uint8List.fromList([255] + List.generate(8, (index) => index));
+          Uint8List.fromList([0xff] + List.generate(8, (index) => index));
       final bufferReader = BufferReader.fromTypedData(list);
       final actual = bufferReader.getVarInt();
       final value = BigInt.parse(
