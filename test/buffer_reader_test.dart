@@ -27,7 +27,6 @@ void testValue(BufferReader bufferReader, dynamic value, dynamic expectedValue,
   }
 }
 
-
 void main() {
   test('BufferReader.getInt8()', () {
     final values = [-128, -127, -1, 0, 1, 0x7d, 0x7f];

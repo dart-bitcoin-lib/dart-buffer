@@ -7,8 +7,8 @@ int encodingLength(int number) {
   return (number < 0xfd
       ? 1
       : number <= 0xffff
-      ? 3
-      : number <= 0xffffffff
-      ? 5
-      : 9);
+          ? 3
+          : number <= 0xffffffff
+              ? 5
+              : 9);
 }

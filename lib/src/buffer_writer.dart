@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
+
 /// Buffer Writer
 class BufferWriter {
   ByteData buffer;
@@ -40,7 +41,7 @@ class BufferWriter {
       throw RangeError('"byteLength" out of range');
     }
     int mul = 1;
-    if(endian == Endian.little) {
+    if (endian == Endian.little) {
       int i = 0;
       buffer.buffer.asUint8List()[offset] = value & 0xFF;
       while (++i < byteLength && (mul *= 0x100) != 0) {
