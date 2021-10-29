@@ -63,7 +63,7 @@ class BufferWriter {
   /// In other words, [value] must be between -128 and 127, inclusive.
   void setInt8(int i) {
     buffer.setInt8(offset, i);
-    offset += i.bitLength;
+    offset++;
   }
 
   /// Sets the byte at the current offset in buffer to the
@@ -73,7 +73,7 @@ class BufferWriter {
   /// In other words, [value] must be between 0 and 255, inclusive.
   void setUInt8(int i) {
     buffer.setUint8(offset, i);
-    offset += i.bitLength;
+    offset++;
   }
 
   /// Sets the two bytes starting at the current offset in buffer
@@ -84,7 +84,7 @@ class BufferWriter {
   /// between -2<sup>15</sup> and 2<sup>15</sup> - 1, inclusive.
   void setInt16(int i, [Endian endian = Endian.little]) {
     buffer.setInt16(offset, i, endian);
-    offset += i.bitLength;
+    offset += 2;
   }
 
   /// Sets the two bytes starting at the current offset in this object
@@ -95,7 +95,7 @@ class BufferWriter {
   /// 0 and 2<sup>16</sup> - 1, inclusive.
   void setUInt16(int i, [Endian endian = Endian.little]) {
     buffer.setUint16(offset, i, endian);
-    offset += i.bitLength;
+    offset += 2;
   }
 
   /// Sets the four bytes starting at the current offset in buffer
@@ -106,7 +106,7 @@ class BufferWriter {
   /// between -2<sup>31</sup> and 2<sup>31</sup> - 1, inclusive.
   void setInt32(int i, [Endian endian = Endian.little]) {
     buffer.setInt32(offset, i, endian);
-    offset += i.bitLength;
+    offset += 4;
   }
 
   /// Sets the four bytes starting at the current offset in buffer
@@ -117,7 +117,7 @@ class BufferWriter {
   /// 0 and 2<sup>32</sup> - 1, inclusive.
   void setUInt32(int i, [Endian endian = Endian.little]) {
     buffer.setUint32(offset, i, endian);
-    offset += i.bitLength;
+    offset += 4;
   }
 
   /// Sets the eight bytes starting at the current offset in buffer
@@ -128,7 +128,7 @@ class BufferWriter {
   /// between -2<sup>63</sup> and 2<sup>63</sup> - 1, inclusive.
   void setInt64(int i, [Endian endian = Endian.little]) {
     buffer.setInt64(offset, i, endian);
-    offset += i.bitLength;
+    offset += 8;
   }
 
   /// Sets the eight bytes starting at the current offset in buffer
@@ -139,7 +139,7 @@ class BufferWriter {
   /// 0 and 2<sup>64</sup> - 1, inclusive.
   void setUInt64(int i, [Endian endian = Endian.little]) {
     buffer.setUint64(offset, i, endian);
-    offset += i.bitLength;
+    offset += 8;
   }
 
   /// Sets the four bytes starting at the current offset in buffer
@@ -201,25 +201,30 @@ class BufferWriter {
   }
 
   /// Sets next bytes
-  void setSlice(ByteData slice) {
+  void setSlice(TypedData slice) {
     if (buffer.lengthInBytes < offset + slice.lengthInBytes) {
       throw Exception('Cannot set slice out of bounds');
     }
-    buffer.buffer.asUint8List().insertAll(offset, slice.buffer.asUint8List());
-    offset += buffer.lengthInBytes;
+    buffer.buffer.asUint8List().setAll(offset, slice.buffer.asUint8List());
+    offset += slice.lengthInBytes;
   }
 
   /// Sets next byte and return an ByteData value based on the data length specified by this byte.
-  void setVarSlice(ByteData slice) {
+  void setVarSlice(TypedData slice) {
     setVarInt(slice.lengthInBytes);
     setSlice(slice);
   }
 
   /// Sets vector list
-  void setVector(List<ByteData> vector) {
+  void setVector(List<TypedData> vector) {
     setVarInt(vector.length);
     for (var buf in vector) {
       setVarSlice(buf);
     }
+  }
+
+  /// Convert [ByteData] to [Uint8List]
+  Uint8List toUint8List() {
+    return buffer.buffer.asUint8List();
   }
 }

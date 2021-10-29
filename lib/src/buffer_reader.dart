@@ -134,7 +134,7 @@ class BufferReader {
   /// in IEEE 754 single-precision binary floating-point format (binary32).
   double getFloat32([Endian endian = Endian.little]) {
     final result = buffer.getFloat32(offset, endian);
-    offset += 8;
+    offset += 4;
     return result;
   }
 
