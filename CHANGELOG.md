@@ -1,3 +1,9 @@
+## 1.0.2
+
+- offset increment bug fixed
+- update tests
+- add encodingLength function
+
 ## 1.0.1
 
 - add getUInt, setUInt method
