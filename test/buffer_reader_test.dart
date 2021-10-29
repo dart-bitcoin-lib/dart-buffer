@@ -1,9 +1,10 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:convert/convert.dart';
 import 'package:dart_buffer/dart_buffer.dart';
 import 'package:test/test.dart';
+
+import 'common_helper.dart';
 
 void testValue(BufferReader bufferReader, dynamic value, dynamic expectedValue,
     [int? expectedOffset]) {
@@ -13,33 +14,21 @@ void testValue(BufferReader bufferReader, dynamic value, dynamic expectedValue,
 
   if (expectedValue is List<int> && value is List<int>) {
     expect(
-      value.sublist(0, expectedOffset),
-      expectedValue.sublist(0, expectedOffset),
+      value.sublist(
+          0, value.length >= expectedOffset ? expectedOffset : value.length),
+      expectedValue.sublist(
+          0,
+          expectedValue.length >= expectedOffset
+              ? expectedOffset
+              : expectedValue.length),
     );
   } else {
     expect(value as int, expectedValue);
   }
 }
 
-int encodingLength(int number) {
-  if (number < 0) {
-    throw ArgumentError.value(
-        number, 'number', 'Value should be unsigned integer.');
-  }
-
-  return (number < 0xfd
-      ? 1
-      : number <= 0xffff
-          ? 3
-          : number <= 0xffffffff
-              ? 5
-              : 9);
-}
 
 void main() {
-  final numbers = List.generate(16, (index) => Random().nextInt(10).abs());
-  final buffPositive = Uint8List.fromList(numbers);
-
   test('BufferReader.getInt8()', () {
     final values = [-128, -127, -1, 0, 1, 0x7d, 0x7f];
     final buffer = Int8List.fromList(values).buffer.asByteData();
@@ -183,24 +172,22 @@ void main() {
       testValue(bufferReader, val, v, expectedOffset);
     }
   });
-  group('BufferReader.getVarSlice()', () {
-    test('should be return ByteData', () {
-      final bufferReader =
-          BufferReader.fromTypedData(Uint8List.fromList([10, ...buffPositive]));
-      final actual = bufferReader.getVarSlice().buffer.asUint8List();
-      final expected = buffPositive.sublist(0, 10);
-      expect(hex.encode(actual), equals(hex.encode(expected)));
-    });
-    test('should be throws error', () {
-      final bufferReader = BufferReader.fromTypedData(buffPositive);
-      bufferReader.offset = bufferReader.length;
-      try {
-        bufferReader.getVarSlice();
-      } catch (e) {
-        expect(e, isA<IndexError>());
-        return;
-      }
-      throw Exception('Should be throws.');
-    });
+  test('BufferReader.getVarSlice()', () {
+    const hexStr =
+        '0101fc020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202fdfd0003030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303';
+
+    final values = [
+      Uint8List.fromList(List.filled(1, 1)),
+      Uint8List.fromList(List.filled(252, 2)),
+      Uint8List.fromList(List.filled(253, 3))
+    ];
+
+    final bufferReader = BufferReader.fromHex(hexStr);
+    for (var v in values) {
+      final expectedOffset =
+          bufferReader.offset + encodingLength(v.length) + v.length;
+      final val = bufferReader.getVarSlice().buffer.asUint8List();
+      testValue(bufferReader, val, v, expectedOffset);
+    }
   });
 }
