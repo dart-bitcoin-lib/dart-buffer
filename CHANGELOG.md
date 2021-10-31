@@ -1,3 +1,7 @@
+## 1.0.3
+
+- fixed array bug
+
 ## 1.0.2
 
 - offset increment bug fixed
