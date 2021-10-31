@@ -201,7 +201,7 @@ class BufferReader {
   /// The return value will be List<ByteData>.
   List<ByteData> getVector([Endian endian = Endian.little]) {
     final count = getVarInt();
-    const List<ByteData> vector = [];
+    List<ByteData> vector = [];
     for (int i = 0; i < count; i++) {
       vector.add(getVarSlice(endian));
     }
