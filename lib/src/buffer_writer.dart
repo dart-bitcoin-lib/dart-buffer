@@ -24,6 +24,11 @@ class BufferWriter {
         Uint8List.fromList(hex.decode(data)), offset);
   }
 
+  /// BufferWriter with capacity
+  factory BufferWriter.withCapacity(int size) {
+    return BufferWriter(ByteData(size));
+  }
+
   /// Set offset to zero
   reset() {
     offset = 0;
@@ -224,8 +229,30 @@ class BufferWriter {
     }
   }
 
-  /// Convert [ByteData] to [Uint8List]
-  Uint8List toUint8List() {
-    return buffer.buffer.asUint8List();
+  ByteData end() {
+    if (buffer.lengthInBytes == offset) {
+      return buffer;
+    }
+    throw Exception('buffer size ${buffer.lengthInBytes}, offset $offset');
+  }
+
+  /// Convert [ByteData] to [T]
+  T toTypeData<T extends List<int>>() {
+    switch (T) {
+      case Uint8List:
+        return buffer.buffer.asUint8List() as T;
+      case Int8List:
+        return buffer.buffer.asInt8List() as T;
+      case Uint16List:
+        return buffer.buffer.asUint16List() as T;
+      case Int16List:
+        return buffer.buffer.asInt16List() as T;
+      case Uint32List:
+        return buffer.buffer.asUint32List() as T;
+      case Int32List:
+        return buffer.buffer.asInt32List() as T;
+      default:
+        throw FormatException('Invalid Generic Type');
+    }
   }
 }

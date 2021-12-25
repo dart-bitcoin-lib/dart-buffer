@@ -8,6 +8,24 @@ import 'package:test/test.dart';
 import 'common_helper.dart';
 
 void main() {
+  void testBuffer<T extends List<int>>(
+      BufferWriter bufferWriter, T expectedBuffer,
+      [int? expectedOffset]) {
+    expectedOffset ??= expectedBuffer.length;
+    expect(bufferWriter.offset, equals(expectedOffset));
+    expect(
+      bufferWriter.toTypeData<T>().sublist(0, expectedOffset),
+      expectedBuffer.sublist(0, expectedOffset),
+    );
+  }
+
+  test('BufferWriter.withCapacity()', () {
+    Uint8List expectedBuffer = (hex.decode('04030201') as Uint8List);
+    BufferWriter withCapacity = BufferWriter.withCapacity(4);
+    withCapacity.setInt32(0x04030201, Endian.big);
+
+    testBuffer(withCapacity, expectedBuffer);
+  });
   test('BufferWriter.setInt8()', () {
     final values = [-128, -127, -1, 0, 1, 0x7e, 0x7d];
     final expectedBuffer = Int8List.fromList(values);
@@ -172,11 +190,12 @@ void main() {
       final expectedOffset = bufferWriter.offset + v.length;
       bufferWriter.setSlice(Uint8List.fromList(v));
       expect(bufferWriter.offset, equals(expectedOffset));
-      expect(bufferWriter.toUint8List().sublist(0, expectedOffset),
+      expect(bufferWriter.toTypeData<Uint8List>().sublist(0, expectedOffset),
           expectedBuffer.sublist(0, expectedOffset));
     }
     expect(bufferWriter.offset, equals(expectedBuffer.lengthInBytes));
-    expect(bufferWriter.toUint8List().sublist(0, expectedBuffer.length),
+    expect(
+        bufferWriter.toTypeData<Uint8List>().sublist(0, expectedBuffer.length),
         expectedBuffer.sublist(0, expectedBuffer.lengthInBytes));
     try {
       bufferWriter.setSlice(Uint8List.fromList([0, 0]));
@@ -204,11 +223,23 @@ void main() {
           bufferWriter.offset + encodingLength(value.length) + value.length;
       bufferWriter.setVarSlice(Uint8List.fromList(value));
       expect(bufferWriter.offset, equals(expectedOffset));
-      expect(bufferWriter.toUint8List().sublist(0, expectedOffset),
+      expect(bufferWriter.toTypeData<Uint8List>().sublist(0, expectedOffset),
           expectedBuffer.sublist(0, expectedOffset));
     }
     expect(bufferWriter.offset, equals(expectedBuffer.lengthInBytes));
-    expect(bufferWriter.toUint8List().sublist(0, expectedBuffer.length),
+    expect(
+        bufferWriter.toTypeData<Uint8List>().sublist(0, expectedBuffer.length),
         expectedBuffer.sublist(0, expectedBuffer.lengthInBytes));
+  });
+  test('BufferWriter.end()', () {
+    Uint8List expectedBuffer = (hex.decode('0403020108070605') as Uint8List);
+    BufferWriter bufferWriter = BufferWriter.withCapacity(8);
+    bufferWriter.setUInt32(0x01020304, Endian.little);
+    bufferWriter.setUInt32(0x05060708, Endian.little);
+
+    final result = bufferWriter.end();
+    testBuffer(bufferWriter, result.buffer.asUint8List());
+
+    testBuffer(bufferWriter, expectedBuffer);
   });
 }
