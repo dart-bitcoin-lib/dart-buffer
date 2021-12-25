@@ -134,7 +134,7 @@ class BufferReader {
   /// in IEEE 754 single-precision binary floating-point format (binary32).
   double getFloat32([Endian endian = Endian.little]) {
     final result = buffer.getFloat32(offset, endian);
-    offset += 8;
+    offset += 4;
     return result;
   }
 
@@ -201,7 +201,7 @@ class BufferReader {
   /// The return value will be List<ByteData>.
   List<ByteData> getVector([Endian endian = Endian.little]) {
     final count = getVarInt();
-    const List<ByteData> vector = [];
+    List<ByteData> vector = [];
     for (int i = 0; i < count; i++) {
       vector.add(getVarSlice(endian));
     }

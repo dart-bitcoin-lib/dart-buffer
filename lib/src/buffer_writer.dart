@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
+
 /// Buffer Writer
 class BufferWriter {
   ByteData buffer;
@@ -23,6 +24,11 @@ class BufferWriter {
         Uint8List.fromList(hex.decode(data)), offset);
   }
 
+  /// BufferWriter with capacity
+  factory BufferWriter.withCapacity(int size) {
+    return BufferWriter(ByteData(size));
+  }
+
   /// Set offset to zero
   reset() {
     offset = 0;
@@ -40,7 +46,7 @@ class BufferWriter {
       throw RangeError('"byteLength" out of range');
     }
     int mul = 1;
-    if(endian == Endian.little) {
+    if (endian == Endian.little) {
       int i = 0;
       buffer.buffer.asUint8List()[offset] = value & 0xFF;
       while (++i < byteLength && (mul *= 0x100) != 0) {
@@ -63,7 +69,7 @@ class BufferWriter {
   /// In other words, [value] must be between -128 and 127, inclusive.
   void setInt8(int i) {
     buffer.setInt8(offset, i);
-    offset += i.bitLength;
+    offset++;
   }
 
   /// Sets the byte at the current offset in buffer to the
@@ -73,7 +79,7 @@ class BufferWriter {
   /// In other words, [value] must be between 0 and 255, inclusive.
   void setUInt8(int i) {
     buffer.setUint8(offset, i);
-    offset += i.bitLength;
+    offset++;
   }
 
   /// Sets the two bytes starting at the current offset in buffer
@@ -84,7 +90,7 @@ class BufferWriter {
   /// between -2<sup>15</sup> and 2<sup>15</sup> - 1, inclusive.
   void setInt16(int i, [Endian endian = Endian.little]) {
     buffer.setInt16(offset, i, endian);
-    offset += i.bitLength;
+    offset += 2;
   }
 
   /// Sets the two bytes starting at the current offset in this object
@@ -95,7 +101,7 @@ class BufferWriter {
   /// 0 and 2<sup>16</sup> - 1, inclusive.
   void setUInt16(int i, [Endian endian = Endian.little]) {
     buffer.setUint16(offset, i, endian);
-    offset += i.bitLength;
+    offset += 2;
   }
 
   /// Sets the four bytes starting at the current offset in buffer
@@ -106,7 +112,7 @@ class BufferWriter {
   /// between -2<sup>31</sup> and 2<sup>31</sup> - 1, inclusive.
   void setInt32(int i, [Endian endian = Endian.little]) {
     buffer.setInt32(offset, i, endian);
-    offset += i.bitLength;
+    offset += 4;
   }
 
   /// Sets the four bytes starting at the current offset in buffer
@@ -117,7 +123,7 @@ class BufferWriter {
   /// 0 and 2<sup>32</sup> - 1, inclusive.
   void setUInt32(int i, [Endian endian = Endian.little]) {
     buffer.setUint32(offset, i, endian);
-    offset += i.bitLength;
+    offset += 4;
   }
 
   /// Sets the eight bytes starting at the current offset in buffer
@@ -128,7 +134,7 @@ class BufferWriter {
   /// between -2<sup>63</sup> and 2<sup>63</sup> - 1, inclusive.
   void setInt64(int i, [Endian endian = Endian.little]) {
     buffer.setInt64(offset, i, endian);
-    offset += i.bitLength;
+    offset += 8;
   }
 
   /// Sets the eight bytes starting at the current offset in buffer
@@ -139,7 +145,7 @@ class BufferWriter {
   /// 0 and 2<sup>64</sup> - 1, inclusive.
   void setUInt64(int i, [Endian endian = Endian.little]) {
     buffer.setUint64(offset, i, endian);
-    offset += i.bitLength;
+    offset += 8;
   }
 
   /// Sets the four bytes starting at the current offset in buffer
@@ -201,25 +207,52 @@ class BufferWriter {
   }
 
   /// Sets next bytes
-  void setSlice(ByteData slice) {
+  void setSlice(TypedData slice) {
     if (buffer.lengthInBytes < offset + slice.lengthInBytes) {
       throw Exception('Cannot set slice out of bounds');
     }
-    buffer.buffer.asUint8List().insertAll(offset, slice.buffer.asUint8List());
-    offset += buffer.lengthInBytes;
+    buffer.buffer.asUint8List().setAll(offset, slice.buffer.asUint8List());
+    offset += slice.lengthInBytes;
   }
 
   /// Sets next byte and return an ByteData value based on the data length specified by this byte.
-  void setVarSlice(ByteData slice) {
+  void setVarSlice(TypedData slice) {
     setVarInt(slice.lengthInBytes);
     setSlice(slice);
   }
 
   /// Sets vector list
-  void setVector(List<ByteData> vector) {
+  void setVector(List<TypedData> vector) {
     setVarInt(vector.length);
     for (var buf in vector) {
       setVarSlice(buf);
+    }
+  }
+
+  ByteData end() {
+    if (buffer.lengthInBytes == offset) {
+      return buffer;
+    }
+    throw Exception('buffer size ${buffer.lengthInBytes}, offset $offset');
+  }
+
+  /// Convert [ByteData] to [T]
+  T toTypeData<T extends List<int>>() {
+    switch (T) {
+      case Uint8List:
+        return buffer.buffer.asUint8List() as T;
+      case Int8List:
+        return buffer.buffer.asInt8List() as T;
+      case Uint16List:
+        return buffer.buffer.asUint16List() as T;
+      case Int16List:
+        return buffer.buffer.asInt16List() as T;
+      case Uint32List:
+        return buffer.buffer.asUint32List() as T;
+      case Int32List:
+        return buffer.buffer.asInt32List() as T;
+      default:
+        throw FormatException('Invalid Generic Type');
     }
   }
 }
