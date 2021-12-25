@@ -1,3 +1,7 @@
+## 2.0.1
+
+- update LICENSE
+
 ## 2.0.0
 
 - update license
