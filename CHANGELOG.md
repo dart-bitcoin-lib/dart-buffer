@@ -1,3 +1,8 @@
+## 2.0.0
+
+- add new methods
+- update convert methods
+
 ## 1.0.3
 
 - fixed array bug
