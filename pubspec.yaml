@@ -1,6 +1,6 @@
 name: dart_buffer
 description: Buffer Utils for Dart. BufferReader and BufferWriter classes.
-version: 1.0.3
+version: 2.0.0
 homepage: https://github.com/dart-bitcoin-lib/dart-buffer
 repository: https://github.com/dart-bitcoin-lib/dart-buffer
 issue_tracker: https://github.com/dart-bitcoin-lib/dart-buffer/issues
