@@ -1,5 +1,9 @@
 ## 2.0.0
 
+- update license
+
+## 2.0.1
+
 - add new methods
 - update convert methods
 
